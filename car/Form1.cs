@@ -42,7 +42,7 @@ namespace car
         public double[][] array2;
         int[] z;
         int[] p;
-        int[] q;
+        int[] q = { 1, 2 };
         public static Bitmap resizeImage(Bitmap imgToResize, Size size)
         {
             return (Bitmap)(new Bitmap(imgToResize, size));
@@ -108,7 +108,7 @@ namespace car
                     H.AddRange(histo);
                 }
                 array.Add(H.ToArray<double>());
-                y.Add(3);
+                y.Add(1);
             }
             foreach (var i in filepaths1)
             {
@@ -121,13 +121,20 @@ namespace car
                     H1.AddRange(histo);
                 }
                 array.Add(H1.ToArray<double>());
-                y.Add(1);
+                y.Add(2);
             }
 
             z = y.ToArray();
             array1 = array.ToArray<double[]>();
             //Accord.Imaging.Converters.IConverter < original,List<double[]> test>;
-            var teacher = new MulticlassSupportVectorLearning<DynamicTimeWarping>();
+            var teacher = new MulticlassSupportVectorLearning<DynamicTimeWarping>()
+            {
+                // Setup the learning algorithm for each 1x1 subproblem
+                Learner = (param) => new SequentialMinimalOptimization<DynamicTimeWarping>()
+                {
+                    Kernel = new DynamicTimeWarping(2),
+                }
+            };
             svm = teacher.Learn(array1, z);
             //this.svm = teacher.Learn(original, histogram);
             //SupportVectorMachine svm = new SupportVectorMachine(390);
