@@ -29,14 +29,20 @@ namespace car
         public List<double[]> test;
         public string path = @"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\front of car";
         public string path1 = @"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\negative";
+        public string path2 = @"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\test";
         public string[] filePaths;
-        // = Directory.GetFiles(@"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car", "*.jpg");
+        //=Directory.GetFiles(@"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car", "*.jpg");
         public string[] filepaths1;
+        public string[] filepaths2;
         //public MulticlassSupportVectorMachine<DynamicTimeWarping> teacher = new MulticlassSupportVectorMachine();
         public object dataGridImage;
         public List<double[]> array = new List<double[]>();
+        public List<double[]> testarray = new List<double[]>();
         public double[][] array1;
+        public double[][] array2;
         int[] z;
+        int[] p;
+        int[] q;
         public static Bitmap resizeImage(Bitmap imgToResize, Size size)
         {
             return (Bitmap)(new Bitmap(imgToResize, size));
@@ -44,8 +50,9 @@ namespace car
         public Form1()
         {
             InitializeComponent();
-            filePaths = Directory.GetFiles(path, "*.jpg",SearchOption.TopDirectoryOnly);
+            filePaths  = Directory.GetFiles(path, "*.jpg",SearchOption.TopDirectoryOnly);
             filepaths1 = Directory.GetFiles(path1, "*.jpg", SearchOption.TopDirectoryOnly);
+            filepaths2 = Directory.GetFiles(path2, "*.jpg", SearchOption.TopDirectoryOnly);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -86,16 +93,14 @@ namespace car
 
         private void hOGToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            List<int> y = new List<int> ();
-            int count = 0;
-            double weights = new double(); 
-            //svm = new MulticlassSupportVectorMachine<DynamicTimeWarping>(inputs: 50, kernel: new DynamicTimeWarping(2), classes: 2);
+            List<int> y = new List<int>();
+            svm = new MulticlassSupportVectorMachine<DynamicTimeWarping>(inputs: 0, kernel: new DynamicTimeWarping(2), classes: 2);
             foreach (var i in filePaths)
             {
                 Bitmap carImage = new Bitmap(i);
                 carImage = resizeImage(carImage, new Size(480, 270));
-                // System.IO.File.Copy(i, @"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\test" + Path.GetFileName(i));
-                // carImage.Save(@"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\test\" + Path.GetFileName(i));
+                //System.IO.File.Copy(i, @"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\test" + Path.GetFileName(i));
+                //carImage.Save(@"C:\Users\Rahul\Documents\Visual Studio 2015\Projects\car\car\test\" + Path.GetFileName(i));
                 List<double[]> histogram = hog.ProcessImage(carImage);
                 List<double> H = new List<double>();
                 foreach (var histo in histogram)
@@ -103,7 +108,7 @@ namespace car
                     H.AddRange(histo);
                 }
                 array.Add(H.ToArray<double>());
-                y.Add(1);
+                y.Add(3);
             }
             foreach (var i in filepaths1)
             {
@@ -116,23 +121,34 @@ namespace car
                     H1.AddRange(histo);
                 }
                 array.Add(H1.ToArray<double>());
-                y.Add(2);
+                y.Add(1);
             }
 
-                z = y.ToArray();
+            z = y.ToArray();
             array1 = array.ToArray<double[]>();
             //Accord.Imaging.Converters.IConverter < original,List<double[]> test>;
             var teacher = new MulticlassSupportVectorLearning<DynamicTimeWarping>();
             svm = teacher.Learn(array1, z);
-                    //this.svm = teacher.Learn(original, histogram);
-            // SupportVectorMachine svm = new SupportVectorMachine(390);
-            //  MulticlassSupportVectorMachine svm = new MulticlassSupportVectorMachine(390, 2); 
-        }
+            //this.svm = teacher.Learn(original, histogram);
+            //SupportVectorMachine svm = new SupportVectorMachine(390);
+            //MulticlassSupportVectorMachine svm = new MulticlassSupportVectorMachine(390, 2); 
+            foreach(var testimg in filepaths2)
+            {
+                Bitmap testImage = new Bitmap(testimg);
+                testImage = resizeImage(testImage, new Size(480, 270));
+                List<double[]> histogram2 = hog.ProcessImage(testImage);
+                List<double> H2 = new List<double>();
+                foreach (var histo in histogram2)
+                {
+                    H2.AddRange(histo);
+                }
+                testarray.Add(H2.ToArray<double>());
+                array2 = testarray.ToArray<double[]>();
+                p = svm.Decide(array2);
+            }
+            
+        } 
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            foreach(var i in z)
-            dataGridView1.DataSource = z[i];
-        }
+
     }
 }
